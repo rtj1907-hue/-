@@ -51,7 +51,7 @@ Button.MouseButton1Click:Connect(function()
         })
 
         local success, err = pcall(function()
-            loadstring(game:HttpGet('https://raw.githubusercontent.com/你的帳號/你的倉庫/main/你的腳本.lua'))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/rtj1907-hue/dawd/refs/heads/main/DASDW.lua"))()
         end)
         if not success then
             warn("主腳本載入失敗: "..tostring(err))
