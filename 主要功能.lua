@@ -2,8 +2,7 @@ local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 
 local player = Players.LocalPlayer
-
-local correctKey = "123456" -- 你可以改成自己想要的 KEY
+local correctKey = "123456" 
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "KeyGui"
@@ -27,31 +26,36 @@ TextLabel.Parent = Frame
 local TextBox = Instance.new("TextBox")
 TextBox.Size = UDim2.new(0.8, 0, 0, 50)
 TextBox.Position = UDim2.new(0.1, 0, 0, 50)
-TextBox.Text = ""
 TextBox.PlaceholderText = "輸入 KEY"
-TextBox.TextColor3 = Color3.fromRGB(0,0,0)
+TextBox.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextBox.Parent = Frame
 
 local Button = Instance.new("TextButton")
 Button.Size = UDim2.new(0.5, 0, 0, 40)
 Button.Position = UDim2.new(0.25, 0, 0, 110)
 Button.Text = "確認"
-Button.TextColor3 = Color3.fromRGB(255,255,255)
+Button.TextColor3 = Color3.fromRGB(255, 255, 255)
 Button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 Button.Parent = Frame
 
 Button.MouseButton1Click:Connect(function()
     local inputKey = TextBox.Text
     if inputKey == correctKey then
-        TextLabel.Text = "KEY 正確！開始執行腳本"
+        TextLabel.Text = "KEY 正確！載入主腳本..."
         Frame:Destroy()
-        
+
         StarterGui:SetCore("SendNotification", {
             Title = "Script Made By",
             Text = "GhostPlayer",
             Duration = 3,
         })
-        print("腳本功能啟動！")
+
+        local success, err = pcall(function()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/你的帳號/你的倉庫/main/你的腳本.lua'))()
+        end)
+        if not success then
+            warn("主腳本載入失敗: "..tostring(err))
+        end
     else
         TextLabel.Text = "KEY 錯誤，請重新輸入"
     end
