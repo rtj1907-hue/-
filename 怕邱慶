@@ -1,0 +1,109 @@
+local player = game:GetService("Players").LocalPlayer
+local ToolName = "怕邱慶"
+
+local function cleanupOldTool()
+    if player:FindFirstChild("Backpack") then
+        local oldTool = player.Backpack:FindFirstChild(ToolName)
+        if oldTool then oldTool:Destroy() end
+    end
+    
+    if player.Character then
+        local oldTool = player.Character:FindFirstChild(ToolName)
+        if oldTool then oldTool:Destroy() end
+    end
+
+    if workspace:FindFirstChild("animationContainer") then
+        workspace.animationContainer:Destroy()
+    end
+end
+
+local function giveTool()
+    cleanupOldTool()
+
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local backpack = player:WaitForChild("Backpack")
+
+    local function getCharacterModel()
+        return humanoid.RigType == Enum.HumanoidRigType.R15 and "R15" or "R6"
+    end
+
+    local animationObject = Instance.new("Animation")
+    animationObject.Name = "animationContainer"
+    animationObject.Parent = workspace
+
+    if getCharacterModel() == "R15" then
+        animationObject.AnimationId = "rbxassetid://698251653"
+    else
+        animationObject.AnimationId = "rbxassetid://72042024"
+    end
+
+    local toolObject = Instance.new("Tool")
+    toolObject.Name = ToolName
+    toolObject.RequiresHandle = false
+    toolObject.Parent = backpack
+
+    local isActive = false
+    local currentAnimationTrack = nil
+
+    toolObject.Equipped:Connect(function()
+        local char = player.Character
+        local hum = char and char:FindFirstChild("Humanoid")
+        local animator = hum and (hum:FindFirstChildOfClass("Animator") or hum:WaitForChild("Animator"))
+
+        if not animator then return end
+
+        isActive = true
+        while isActive do
+            if not currentAnimationTrack then
+                currentAnimationTrack = animator:LoadAnimation(animationObject)
+            end
+
+            currentAnimationTrack:Play()
+            currentAnimationTrack:AdjustSpeed(0.7)
+            currentAnimationTrack.TimePosition = 0.6
+
+            task.wait(0.1)
+            
+            while isActive and currentAnimationTrack and currentAnimationTrack.TimePosition < 0.7 do
+                task.wait(0.05)
+            end
+
+            if currentAnimationTrack then
+                currentAnimationTrack:Stop()
+                currentAnimationTrack:Destroy()
+                currentAnimationTrack = nil
+            end
+        end
+    end)
+
+    toolObject.Unequipped:Connect(function()
+        isActive = false
+        if currentAnimationTrack then
+            currentAnimationTrack:Stop()
+            currentAnimationTrack:Destroy()
+            currentAnimationTrack = nil
+        end
+    end)
+    
+    humanoid.Died:Connect(function()
+        isActive = false
+        if currentAnimationTrack then
+            currentAnimationTrack:Stop()
+            currentAnimationTrack:Destroy()
+            currentAnimationTrack = nil
+        end
+    end)
+end
+
+giveTool()
+
+if _G.AutoToolConnection then
+    _G.AutoToolConnection:Disconnect()
+end
+
+_G.AutoToolConnection = player.CharacterAdded:Connect(function(newCharacter)
+    player:WaitForChild("Backpack")
+    task.wait(0.5)
+    giveTool()
+end)
