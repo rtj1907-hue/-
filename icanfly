@@ -1,5 +1,6 @@
 local CoreGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
+local PhysicsService = game:GetService("PhysicsService")
 local lplayer = Players.LocalPlayer
 
 CoreGui:SetCore("SendNotification", {
@@ -132,10 +133,26 @@ local function SkidFling(TargetPlayer)
     local THead = TCharacter and TCharacter:FindFirstChild("Head")
     local Accessory = TCharacter and TCharacter:FindFirstChildOfClass("Accessory")
     local Handle = Accessory and Accessory:FindFirstChild("Handle")
+    
     if Character and Humanoid and RootPart then
         if RootPart.Velocity.Magnitude < 50 then
             getgenv().OldPos = RootPart.CFrame
         end
+
+        local function SetGhost(bool)
+            for _, v in pairs(Players:GetPlayers()) do
+                if v ~= lplayer and v ~= TargetPlayer and v.Character then
+                    for _, part in pairs(v.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = not bool
+                        end
+                    end
+                end
+            end
+        end
+
+        SetGhost(true)
+
         if THead then
             workspace.CurrentCamera.CameraSubject = THead
         elseif not THead and Handle then
@@ -143,12 +160,14 @@ local function SkidFling(TargetPlayer)
         elseif THumanoid and TRootPart then
             workspace.CurrentCamera.CameraSubject = THumanoid
         end
+
         local FPos = function(BasePart, Pos, Ang)
             RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
             Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
             RootPart.Velocity = Vector3.new(2e8, 2e8 * 10, 2e8)
             RootPart.RotVelocity = Vector3.new(2e9, 2e9, 2e9)
         end
+
         local SFBasePart = function(BasePart)
             local TimeToWait = 2
             local Time = tick()
@@ -184,6 +203,7 @@ local function SkidFling(TargetPlayer)
                 else break end
             until BasePart.Velocity.Magnitude > 500 or not getgenv().flingloop or tick() > Time + TimeToWait
         end
+
         getgenv().FPDH = workspace.FallenPartsDestroyHeight
         workspace.FallenPartsDestroyHeight = 0/0
         local BV = Instance.new("BodyVelocity")
@@ -200,6 +220,7 @@ local function SkidFling(TargetPlayer)
         BV:Destroy()
         Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
         workspace.CurrentCamera.CameraSubject = Humanoid
+        SetGhost(false)
         repeat
             RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
             Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
